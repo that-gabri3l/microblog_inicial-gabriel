@@ -1,6 +1,8 @@
 <?php
-
+namespace Microblog\Helpers;
 use InvalidArgumentException;
+use Microblog\Eunms\Destaque;
+use Microblog\Eunms\TipoUsuario;
 
 class Validacoes
 {

@@ -1,6 +1,9 @@
 <?php
+namespace Microblog\Models;
 
-class Noticia
+use Microblog\Eunms\Destaque;
+
+final class Noticia
 {
     private int $id;
     private string $data;
