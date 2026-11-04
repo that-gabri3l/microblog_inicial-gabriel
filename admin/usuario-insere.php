@@ -1,4 +1,22 @@
-<?php require_once __DIR__ . '/../includes/cabecalho-admin.php'; ?>
+<?php
+
+use Microblog\Helpers\Utils;
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+//Inicializa variaveis para armazenar mensagens de erro e valores do formulario
+$mensagemErro = "";
+$nome = "";
+$email = "";
+$tipo = "editor"; //valor padrão confrome formulario
+
+if($_SERVER['REQUEST_METHOD'] === "POST"){
+    //Normaliza as entradas de dados do formulario para minimizar problemas de segurança e inconsistências 
+    $nome = Utils::normalizarEntrada($_POST["nome"] ?? "");
+}
+
+
+require_once __DIR__ . '/../includes/cabecalho-admin.php'; ?>
 
 <div class="row">
     <article class="col-12 bg-white rounded shadow my-1 py-4">
