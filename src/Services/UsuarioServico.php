@@ -62,4 +62,23 @@ final class UsuarioServico
             throw new Exception("Erro ao inserir usuário");
         }
     }
+    public function buscarPorId(int $id): ?array
+    {
+        $sql = "SELECT id, nome, email, senha, tipo FROM usuarios WHERE id = :id";
+
+        try {
+            $consulta = $this->conexao->prepare($sql);
+            $consulta->bindValue(":id", $id);
+            $consulta->execute();
+
+            return $consulta->fetch() ?: null;
+
+            //Usando ternario tradicional
+            //return $consulta->fetch() ? $consulta->fetch() : null;
+
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao buscar usuario por ID");
+        }
+    }
 }
