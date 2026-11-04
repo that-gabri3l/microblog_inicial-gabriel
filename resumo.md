@@ -2,77 +2,87 @@
 
 ## Branch analisada
 
-- **Branch:** `01_aula-0311`
-- **Estado:** sincronizada com `origin/01_aula-0311`
-- **Período dos commits:** 03/11/2026
-- **Commits analisados:** 7
+- **Branch:** `02_aula-0411`
+- **Estado:** sincronizada com `origin/02_aula-0411`
+- **Período dos commits:** 04/11/2026
+- **Commits analisados:** 10
 
 ## Principais pontos trabalhados
 
-### 1. Estrutura inicial do projeto
+### 1. Tratamento de erros na listagem
 
-O projeto foi iniciado como um microblog em PHP, contendo:
+O fluxo de usuários passou a registrar detalhes de falhas de banco no log e a lançar mensagens amigáveis para apresentação no Front-End.
 
-- Área pública para notícias e categorias.
-- Área administrativa para usuários, notícias e categorias.
-- Modelos, helpers, conexão com banco de dados e arquivos SQL de apoio.
-- Recursos visuais, imagens, scripts JavaScript e folhas de estilo.
+### 2. Inserção de usuários
 
-### 2. Atualização da página inicial
+O `UsuarioServico` passou a oferecer o método `inserir(Usuario $usuario)`, responsável por:
 
-Foi realizada uma atualização pontual no `index.php`, mantendo a estrutura inicial do microblog.
+- Preparar uma instrução SQL parametrizada.
+- Inserir nome, e-mail, senha e tipo.
+- Usar os getters do modelo `Usuario`.
+- Persistir o valor do enum de tipo de usuário.
+- Registrar erros de banco e lançar uma exceção amigável.
 
-### 3. Autoload PSR-4 e namespaces
+O formulário `admin/usuario-insere.php` foi integrado ao serviço e passou a:
 
-Foi adicionado o `composer.json` com o mapeamento:
+- Normalizar os dados recebidos.
+- Validar nome, e-mail, senha e tipo.
+- Codificar a senha antes da persistência.
+- Exibir mensagens de validação ou erro inesperado.
+- Manter os valores preenchidos após uma falha.
+- Redirecionar para a listagem após o cadastro.
 
-```json
-"Microblog\\": "src/"
-```
+### 3. Validações e namespaces
 
-Também foram adicionados namespaces aos enums, helpers e modelos. O diretório `vendor/` foi incluído no `.gitignore`.
+Foram corrigidos os namespaces dos enums de `Microblog\Eunms` para `Microblog\Enums`.
 
-Para gerar o autoload:
+As validações de usuário passaram a usar `TipoUsuario::tryFrom()` e a validar:
 
-```bash
-composer dump-autoload
-```
+- Nome obrigatório.
+- E-mail preenchido e válido.
+- Senha com pelo menos cinco caracteres.
+- Tipo de usuário válido.
 
-### 4. Criação do serviço de usuários
+Também foi ajustada a validação de destaque para verificar a existência do enum antes de usá-lo.
 
-Foi criado `UsuarioServico`, responsável por:
+### 4. Modelo de usuário
 
-- Obter a conexão PDO por meio de `ConexaoBD::getConexao()`.
-- Centralizar as operações relacionadas aos usuários.
+O modelo `Usuario` passou a importar o enum correto. O `id` foi tornado opcional (`?int`), permitindo que o banco o gere automaticamente durante a inserção.
 
-### 5. Listagem de usuários no banco
+### 5. Listagem administrativa
 
-O método `listarTodos()` foi implementado para:
+`admin/usuarios.php` passou a:
 
-- Consultar `id`, `nome`, `email` e `tipo`.
-- Ordenar os resultados pelo nome.
-- Registrar detalhes de exceções do banco em `logs/erros.log`.
-- Lançar uma mensagem amigável quando ocorre falha na consulta.
+- Consumir os usuários reais do banco.
+- Exibir a quantidade atual de registros no título.
+- Escapar os valores apresentados no HTML.
+- Exibir mensagem amigável quando a consulta falhar.
+- Gerar links de atualização e exclusão com o ID do usuário.
 
-### 6. Integração com a área administrativa
+### 6. Busca e preenchimento da edição
 
-O arquivo `admin/usuarios.php` passou a:
+O `UsuarioServico` passou a oferecer `buscarPorId(int $id): ?array`, usando consulta parametrizada e retornando `null` quando nenhum usuário é encontrado.
+
+`admin/usuario-atualiza.php` passou a:
 
 - Carregar o autoload do Composer.
-- Instanciar `UsuarioServico`.
-- Buscar os usuários reais do banco.
-- Renderizar os registros dinamicamente.
-- Escapar os valores exibidos em HTML.
-- Exibir um alerta amigável em caso de erro.
-- Montar os links de atualização e exclusão com o ID do usuário.
+- Normalizar e validar o ID recebido pela URL.
+- Buscar os dados do usuário pelo serviço.
+- Registrar erros e exibir mensagens amigáveis.
+- Preencher nome, e-mail e tipo no formulário.
+- Deixar a senha vazia para alteração opcional.
 
 ## Estado atual
 
-A tela administrativa de usuários deixou de usar registros fixos de exemplo e passou a consumir os dados do banco de dados através de serviço. O arquivo `admin/usuarios.php` foi validado com `php -l` e não apresenta erros de sintaxe.
+O fluxo de cadastro e consulta de usuários está integrado ao banco de dados, com validações, tratamento de erros, senha codificada e consultas parametrizadas. A tela de edição já carrega os dados do usuário selecionado.
+
+Ainda não foi implementada a persistência da atualização dos dados no formulário `admin/usuario-atualiza.php`, nem a exclusão efetiva dos usuários.
 
 ## Próximos pontos possíveis
 
-- Implementar as ações reais de atualização e exclusão usando o ID selecionado.
-- Atualizar o contador de usuários exibido no título para refletir a quantidade real de registros.
-- Adicionar tratamento visual para lista vazia.
-- Revisar e padronizar nomes de namespaces e tabelas caso necessário.
+- Implementar o método de atualização no `UsuarioServico`.
+- Processar o `POST` de `admin/usuario-atualiza.php`.
+- Atualizar a senha somente quando um novo valor for informado.
+- Implementar a exclusão de usuários com validação do ID e tratamento de erros.
+- Adicionar mensagens de sucesso após atualizar ou excluir.
+- Adicionar tratamento visual específico para lista vazia.
