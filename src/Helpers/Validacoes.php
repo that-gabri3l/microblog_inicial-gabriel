@@ -1,8 +1,7 @@
 <?php
 namespace Microblog\Helpers;
 use InvalidArgumentException;
-use Microblog\Eunms\Destaque;
-use Microblog\Eunms\TipoUsuario;
+use Microblog\Enums\TipoUsuario;
 
 class Validacoes
 {
@@ -79,7 +78,9 @@ class Validacoes
             throw new InvalidArgumentException("Selecione uma opção de destaque.");
         }
 
-        if (!Destaque::tryFrom($valor)) {
+        $enumDestaque = 'Microblog\\Enums\\Destaque';
+
+        if (!enum_exists($enumDestaque) || !$enumDestaque::tryFrom($valor)) {
             throw new InvalidArgumentException("Valor de destaque inválido.");
         }
     }

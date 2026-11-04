@@ -2,7 +2,9 @@
 
 use Microblog\Helpers\Utils;
 use Microblog\Helpers\Validacoes;
+use Microblog\Enums\TipoUsuario;
 use Microblog\Models\Usuario;
+use Microblog\Services\UsuarioServico;
 
 require_once __DIR__ .'/../vendor/autoload.php';
 
@@ -18,7 +20,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
 
     $nome = Utils::normalizarEntrada($_POST["nome"] ?? "");
     $email = Utils::normalizarEntrada($_POST['email'] ?? "", 'email');
-    $senhaBruta = $_POST['senha'];
+    $senhaBruta = $_POST['senha'] ?? "";
     $tipo = Utils::normalizarEntrada($_POST['tipo'] ?? "");
 
     /* Aplica validações aos valores dos campos do formulário */
@@ -58,7 +60,8 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
     Utils::registrarLog($e);
 
     // Definimos uma mensagem genérica ao usuário
-    $mensagemErro = "Não foi possível cadastrar o usuário. Tente novamente."
+    $mensagemErro = "Não foi possível cadastrar o usuário. Tente novamente.";
+}
 }
 
 
@@ -67,14 +70,24 @@ require_once __DIR__ . '/../includes/cabecalho-admin.php'; ?>
 <div class="row">
     <article class="col-12 bg-white rounded shadow my-1 py-4">
         <h2 class="text-center">Inserir novo usuário</h2>
+
+
+<?php if($mensagemErro !== ""): ?>
+            <div class="alert alert-danger text-center">
+                <?= Utils::escaparHtml($mensagemErro) ?>
+            </div>
+        <?php endif; ?>
+
+
         <form class="mx-auto w-75" action="" method="post" id="form-inserir" name="form-inserir">
+            <!-- Aplicamos o value com valores dinâmicos para garantir que os dados ja digitados previamente, não sejam removidos dos campos no caso de uma falha na validação -->
             <div class="mb-3">
                 <label class="form-label" for="nome">Nome:</label>
-                <input class="form-control" type="text" id="nome" name="nome" value="Nome de exemplo">
+                <input class="form-control" type="text" id="nome" name="nome" value="<?= Utils::escaparHtml($nome) ?>">
             </div>
             <div class="mb-3">
                 <label class="form-label" for="email">E-mail:</label>
-                <input class="form-control" type="email" id="email" name="email" value="pessoa@exemplo.com">
+                <input class="form-control" type="email" id="email" name="email" value="<?= Utils::escaparHtml($email) ?>">
             </div>
             <div class="mb-3">
                 <label class="form-label" for="senha">Senha:</label>
@@ -83,8 +96,8 @@ require_once __DIR__ . '/../includes/cabecalho-admin.php'; ?>
             <div class="mb-3">
                 <label class="form-label" for="tipo">Tipo:</label>
                 <select class="form-select" name="tipo" id="tipo">
-                    <option value="editor" selected>Editor</option>
-                    <option value="admin">Administrador</option>
+                    <option value="editor" <?= $tipo === "editor" ? "selected" : "" ?>>Editor</option>
+                    <option value="admin" <?= $tipo === "admin" ? "selected" : "" ?>>Administrador</option>
                 </select>
             </div>
             <button class="btn btn-primary" id="inserir" name="inserir"><i class="bi bi-save"></i> Inserir</button>
