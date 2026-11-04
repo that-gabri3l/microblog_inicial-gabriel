@@ -49,6 +49,7 @@ final class UsuarioServico
             //Repare abaixo o acesso aos dados do objeto $usuario atraves de seus getters. No caso do getTipoUsuario, como se trata de uma ENUM, acessamos seu valor usando -> value
 
             $consulta->bindValue(":nome", $usuario->getNome());
+            $consulta->bindValue(":email", $usuario->getEmail());
             $consulta->bindValue(":senha", $usuario->getSenha());
             $consulta->bindValue(":tipo", $usuario->getTipoUsuario()->value);
 
