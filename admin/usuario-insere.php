@@ -1,18 +1,64 @@
 <?php
 
 use Microblog\Helpers\Utils;
+use Microblog\Helpers\Validacoes;
+use Microblog\Models\Usuario;
 
-require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__ .'/../vendor/autoload.php';
 
-//Inicializa variaveis para armazenar mensagens de erro e valores do formulario
+// Inicializa variáveis para armazenar mensagens de erro e valores do formulário
 $mensagemErro = "";
 $nome = "";
 $email = "";
-$tipo = "editor"; //valor padrão confrome formulario
+$tipo = "editor"; // valor padrão conforme formulário
 
 if($_SERVER['REQUEST_METHOD'] === "POST"){
-    //Normaliza as entradas de dados do formulario para minimizar problemas de segurança e inconsistências 
+    try {
+         /* Normaliza as entradas de dados do formulário para minimizar problemas de segurança e inconsistências. */
+
     $nome = Utils::normalizarEntrada($_POST["nome"] ?? "");
+    $email = Utils::normalizarEntrada($_POST['email'] ?? "", 'email');
+    $senhaBruta = $_POST['senha'];
+    $tipo = Utils::normalizarEntrada($_POST['tipo'] ?? "");
+
+    /* Aplica validações aos valores dos campos do formulário */
+    Validacoes::validarNome($nome);
+    Validacoes::validarEmail($email);
+    Validacoes::validarSenha($senhaBruta);
+    Validacoes::validarTipo($tipo);
+
+    /* Se todas as validações passarem: */
+
+    // Codificar a senha
+    $senha = Utils::codificarSenha($senhaBruta);
+
+    // Converter a string do tipo de usuário (vindo do formulário) para o ENUM 
+    $tipoEnum = TipoUsuario::from($tipo); 
+
+    // Criar um objeto Usuario com os dados normalizados e validados
+    $usuario = new Usuario($nome, $email, $senha, $tipoEnum);
+
+    // Criar um serviço para usuario
+    $usuarioServico = new UsuarioServico();
+
+    // Inserir o usuário através do serviço
+    $usuarioServico->inserir($usuario);
+
+    // Redirecionar para a página usuarios.php
+    header("location:usuarios.php");
+    exit;
+} catch (InvalidArgumentException $e) {
+    // Primeiro catch: para erros de validação
+    // Exemplo: nome inválido, e-mail incorreto, senha inadequada etc.
+    $mensagemErro = $e->getMessage(); // resgata a mensagem lançada pela exceção
+} catch (Throwable $e) {
+    // Segundo catch: para exceções e erros inesperados.
+
+    // Registramos no log
+    Utils::registrarLog($e);
+
+    // Definimos uma mensagem genérica ao usuário
+    $mensagemErro = "Não foi possível cadastrar o usuário. Tente novamente."
 }
 
 
