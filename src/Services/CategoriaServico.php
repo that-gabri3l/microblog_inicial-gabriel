@@ -20,7 +20,6 @@ final class CategoriaServico
     public function listarTodos(): array
     {
         $sql = "SELECT id, nome FROM categorias ORDER BY nome";
-
         try {
             $consulta = $this->conexao->query($sql);
             return $consulta->fetchAll();
@@ -37,7 +36,9 @@ final class CategoriaServico
         try {
             $consulta = $this->conexao->prepare($sql);
             $consulta->bindValue(":nome", $categoria->getNome());
+
             $consulta->execute();
+
         } catch (PDOException $e) {
             Utils::registrarLog($e);
             throw new Exception("Erro ao inserir categoria");
@@ -50,10 +51,11 @@ final class CategoriaServico
 
         try {
             $consulta = $this->conexao->prepare($sql);
-            $consulta->bindValue(":id", $id, PDO::PARAM_INT);
+            $consulta->bindValue(":id", $id,);
             $consulta->execute();
 
             return $consulta->fetch() ?: null;
+            
         } catch (PDOException $e) {
             Utils::registrarLog($e);
             throw new Exception("Erro ao buscar categoria por ID");
