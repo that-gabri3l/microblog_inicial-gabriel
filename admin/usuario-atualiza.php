@@ -3,6 +3,7 @@
 use Microblog\Enums\TipoUsuario;
 use Microblog\Helpers\Utils;
 use Microblog\Helpers\Validacoes;
+use Microblog\Models\Usuario;
 use Microblog\Services\UsuarioServico;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -49,6 +50,27 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         Validacoes::validarEmail($email);
         Validacoes::validarTipo($tipo);
         $tipoEnum = TipoUsuario::from($tipo);
+
+        //Capturando literalmente a senha como foi digitada
+        $senhaBruta = $_POST['senha'] ?? '';
+
+        /*Se  a senha não foi preenchida, mantenha a senha atual. Se o campo senha for preenchido, verificar se é a mesma senha.
+        Se for a mesma, não faz nada. Se for uma nova senha, codifica (faz o hash)*/
+        if($senhaBruta === "") {
+            $senha = $dadosUsuario['senha'];
+        } else {
+            Validacoes::validarSenha($senhaBruta);
+            $senha = Utils::verificarSenha($senhaBruta, $dadosUsuario['senha']);
+        }
+
+        //Criando um objeto com os dados do usuario visando a atualização no banco
+        $usuario = new Usuario($nome, $email, $senha, $tipoEnum, $id);
+        // Chamamos o serviço responsavel por atualizar o usuario
+        $usuarioServico->atualizar($usuario);
+
+        // Se tudo der certo, redireconamos:
+        header("location:usuarios.php");
+        exit;
         
     } catch (InvalidArgumentException $e) {
         
