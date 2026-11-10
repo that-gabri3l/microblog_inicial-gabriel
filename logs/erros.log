@@ -1,15 +1,10 @@
-[2026-11-03 11:40:35]
-Arquivo: C:\backend\microblog_inicial-gabriel\src\Services\UsuarioServico.php
-Linha: 29
-Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'microblog_2026.usuario' doesn't exist
+[2026-11-10 09:51:07]
+Arquivo: C:\backend\microblog_inicial-gabriel\src\Services\CategoriaServico.php
+Linha: 87
+Mensagem: SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
 
-[2026-11-03 11:41:05]
-Arquivo: C:\backend\microblog_inicial-gabriel\src\Services\UsuarioServico.php
-Linha: 29
-Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'microblog_2026.usuario' doesn't exist
-
-[2026-11-03 11:41:05]
-Arquivo: C:\backend\microblog_inicial-gabriel\src\Services\UsuarioServico.php
-Linha: 29
-Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'microblog_2026.usuario' doesn't exist
+[2026-11-10 09:51:07]
+Arquivo: C:\backend\microblog_inicial-gabriel\src\Services\CategoriaServico.php
+Linha: 90
+Mensagem: Erro ao excluir categoria
 

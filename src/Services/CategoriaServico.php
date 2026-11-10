@@ -79,7 +79,7 @@ final class CategoriaServico
 
     public function excluir(int $id):void
     {
-        $sql = "DELETE FROM categorias WHERE id = id";
+        $sql = "DELETE FROM categorias WHERE id = :id";
 
         try {
             $consulta = $this->conexao->prepare($sql);
