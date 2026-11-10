@@ -99,4 +99,18 @@ final class UsuarioServico
             throw new Exception("Erro ao atualizar usuario");
         }
     }
+
+    public function excluir(int $id): void
+    {
+        $sql = "DELETE FROM usuarios WHERE id = :id";
+
+        try {
+            $consulta = $this->conexao->prepare($sql);
+            $consulta->bindValue(":id", $id);
+            $consulta->execute();
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao excluir usuário");
+        }
+    }
 }
