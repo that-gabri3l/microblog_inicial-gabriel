@@ -1,5 +1,6 @@
 <?php
 namespace Microblog\Models;
+
 final class Categoria
 {
 
