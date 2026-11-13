@@ -1,6 +1,8 @@
 <?php
 
 use Microblog\Eunms\Destaque;
+use Microblog\Helpers\Utils;
+use Microblog\Services\CategoriaServico;
 
 require_once __DIR__ .'/../vendor/autoload.php';
 require_once __DIR__ .'/../includes/cabecalho-admin.php';
@@ -19,6 +21,15 @@ $destaque = Destaque::NAO->value;
 $categoria = '';
 $categoriasCarregadas = false;
 
+//Carregamento das categorias
+try {
+    $categoriaServico = new CategoriaServico();
+    $listaDeCategorias = $categoriaServico->listarTodos();
+    $categoriasCarregadas = true; //flag/sinalização de que deu tudo certo
+} catch (Throwable $e) {
+    Utils::registrarLog($e);
+    $mensagemErro = "Não foi possivel carregar as categorias";
+}
 
 
 
@@ -27,12 +38,26 @@ require_once __DIR__ . '/../includes/cabecalho-admin.php'; ?>
 <div class="row">
     <article class="col-12 bg-white rounded shadow my-1 py-4">
         <h2 class="text-center">Inserir nova notícia</h2>
+
+        <?php if($mensagemErro !== ""): ?>
+            <div class="alert alert-danger text-center">
+                <?= Utils::escaparHtml($mensagemErro) ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($categoriasCarregadas): ?>
         <form class="mx-auto w-75" action="" method="post" id="form-inserir" name="form-inserir" enctype="multipart/form-data">
             <div class="mb-3">
                 <label class="form-label" for="categoria">Categoria:</label>
                 <select class="form-select" name="categoria" id="categoria">
-                    <option value="1" selected>Desenvolvimento</option>
-                    <option value="2">Tecnologia</option>
+                    <option value=""> </option>
+                    
+                    <?php  foreach($listaDeCategorias as $itemCategoria): ?>
+                    <option value="<?= Utils::escaparHtml($itemCategoria['id']) ?>">
+                        <?= Utils::escaparHtml($itemCategoria['nome']) ?>
+                    </option>
+                    <?php endforeach; ?>
+
                 </select>
             </div>
             <div class="mb-3">
@@ -61,6 +86,7 @@ require_once __DIR__ . '/../includes/cabecalho-admin.php'; ?>
             </div>
             <button class="btn btn-primary" id="inserir" name="inserir"><i class="bi bi-save"></i> Inserir</button>
         </form>
+        <?php endif; ?>
     </article>
 </div>
 
