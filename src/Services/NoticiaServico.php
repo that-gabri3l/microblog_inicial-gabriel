@@ -30,13 +30,42 @@ final class NoticiaServico
             $consulta->bindValue(":resumo", $noticia->getResumo());
             $consulta->bindValue(":imagem", $noticia->getImagem());
             $consulta->bindValue(":destaque", $noticia->getDestaque()->value);
-            $consulta->bindValue(":usuario_id", $noticia->getUsuarioID());
+            $consulta->bindValue(":usuario_id", $noticia->getUsuarioId());
             $consulta->bindValue(":categoria_id", $noticia->getCategoriaId());
             $consulta->execute();
 
         } catch (PDOException $e) {
             Utils::registrarLog($e);
             throw new Exception("Erro ao inserir noticia");
+        }
+    }
+
+    public function listarParaPainel(int $usuarioId, string $tipoUsuario): array
+    {
+        $sql = "
+            SELECT n.id, n.data, n.titulo, n.destaque, u.nome AS autor
+            FROM noticias n
+            INNER JOIN usuarios u ON u.id = n.usuario_id
+        ";
+
+        if (mb_strtolower($tipoUsuario, 'UTF-8') === 'editor') {
+            $sql .= " WHERE n.usuario_id = :usuario_id ";
+        }
+
+        $sql .= " ORDER BY n.data DESC";
+
+        try {
+            $consulta = $this->conexao->prepare($sql);
+
+            if (mb_strtolower($tipoUsuario, 'UTF-8') === 'editor') {
+                $consulta->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
+            }
+
+            $consulta->execute();
+            return $consulta->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao listar notícias para o painel");
         }
     }
 }
