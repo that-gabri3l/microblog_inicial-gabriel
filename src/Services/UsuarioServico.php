@@ -82,6 +82,22 @@ final class UsuarioServico
         }
     }
 
+    public function buscarPorEmail(string $email): ?array
+    {
+        $sql = "SELECT id, nome, email, senha, tipo FROM usuarios WHERE email = :email LIMIT 1";
+
+        try {
+            $consulta = $this->conexao->prepare($sql);
+            $consulta->bindValue(":email", $email);
+            $consulta->execute();
+
+            return $consulta->fetch(PDO::FETCH_ASSOC) ?: null;
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao buscar usuário por e-mail");
+        }
+    }
+
     public function atualizar(Usuario $usuario): void
     {
         $sql = "UPDATE usuarios SET nome = :nome, email = :email, senha = :senha, tipo = :tipo WHERE id = :id";
