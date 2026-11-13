@@ -1,4 +1,28 @@
-<?php require_once __DIR__ . '/../includes/cabecalho-admin.php'; ?>
+<?php
+
+use Microblog\Eunms\Destaque;
+
+require_once __DIR__ .'/../vendor/autoload.php';
+require_once __DIR__ .'/../includes/cabecalho-admin.php';
+
+
+//Capturando o id do usuario logado, ao qual a noticia que sera inserida pertencera 
+$idUsuario = $_SESSION['id'];
+
+//Incialização de variaveis que serão usadas ao longo dos processos da pagina
+$mensagemErro = '';
+$listaDeCategorias = [];
+$titulo = '';
+$texto = '';
+$resumo = '';
+$destaque = Destaque::NAO->value;
+$categoria = '';
+$categoriasCarregadas = false;
+
+
+
+
+require_once __DIR__ . '/../includes/cabecalho-admin.php'; ?>
 
 <div class="row">
     <article class="col-12 bg-white rounded shadow my-1 py-4">
