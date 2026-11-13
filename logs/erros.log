@@ -1,0 +1,20 @@
+[2026-11-13 11:16:38]
+Arquivo: C:\backend\microblog_inicial-gabriel\src\Services\NoticiaServico.php
+Linha: 35
+Mensagem: SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+
+[2026-11-13 11:16:38]
+Arquivo: C:\backend\microblog_inicial-gabriel\src\Services\NoticiaServico.php
+Linha: 39
+Mensagem: Erro ao inserir noticia
+
+[2026-11-13 11:20:46]
+Arquivo: C:\backend\microblog_inicial-gabriel\src\Services\NoticiaServico.php
+Linha: 35
+Mensagem: SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+
+[2026-11-13 11:20:46]
+Arquivo: C:\backend\microblog_inicial-gabriel\src\Services\NoticiaServico.php
+Linha: 39
+Mensagem: Erro ao inserir noticia
+

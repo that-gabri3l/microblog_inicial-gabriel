@@ -26,13 +26,13 @@ final class NoticiaServico
             $consulta = $this->conexao->prepare($sql);
 
             $consulta->bindValue(":titulo", $noticia->getTitulo());
-            $consulta->bindValue(":text", $noticia->getTexto());
+            $consulta->bindValue(":texto", $noticia->getTexto());
             $consulta->bindValue(":resumo", $noticia->getResumo());
             $consulta->bindValue(":imagem", $noticia->getImagem());
             $consulta->bindValue(":destaque", $noticia->getDestaque()->value);
             $consulta->bindValue(":usuario_id", $noticia->getUsuarioID());
-            $consulta->bindValue(":categoria_id
-            ", $noticia->getCategoriaId());
+            $consulta->bindValue(":categoria_id", $noticia->getCategoriaId());
+            $consulta->execute();
 
         } catch (PDOException $e) {
             Utils::registrarLog($e);
