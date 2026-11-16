@@ -2,6 +2,7 @@
 namespace Microblog\Services;
 
 use Exception;
+use InvalidArgumentException;
 use Microblog\Database\ConexaoBD;
 use Microblog\Helpers\Utils;
 use Microblog\Models\Noticia;
@@ -98,6 +99,77 @@ final class NoticiaServico
         } catch (PDOException $e) {
             Utils::registrarLog($e);
             throw new Exception("Erro ao buscar notícia por ID");
+        }
+    }
+
+    public function atualizar(Noticia $noticia, int $usuarioId, string $tipoUsuario): void
+    {
+        $id = $noticia->getId();
+        $tipoUsuario = mb_strtolower($tipoUsuario, 'UTF-8');
+
+        if ($id === null) {
+            throw new InvalidArgumentException("A notícia precisa ter um ID para ser atualizada.");
+        }
+
+        if ($tipoUsuario !== 'admin' && $tipoUsuario !== 'editor') {
+            throw new InvalidArgumentException("Tipo de usuário inválido.");
+        }
+
+        $condicaoUsuario = $tipoUsuario === 'editor' ? " AND usuario_id = :usuario_id" : "";
+
+        try {
+            $this->conexao->beginTransaction();
+
+            $consultaVerificacao = $this->conexao->prepare(
+                "SELECT id FROM noticias WHERE id = :id" . $condicaoUsuario . " FOR UPDATE"
+            );
+            $consultaVerificacao->bindValue(':id', $id, PDO::PARAM_INT);
+            if ($tipoUsuario === 'editor') {
+                $consultaVerificacao->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
+            }
+            $consultaVerificacao->execute();
+
+            if ($consultaVerificacao->fetchColumn() === false) {
+                throw new InvalidArgumentException("Notícia não encontrada ou sem permissão para atualizá-la.");
+            }
+
+            $sql = "
+                UPDATE noticias
+                SET titulo = :titulo,
+                    texto = :texto,
+                    resumo = :resumo,
+                    imagem = :imagem,
+                    destaque = :destaque,
+                    categoria_id = :categoria_id
+                WHERE id = :id" . $condicaoUsuario;
+
+            $consulta = $this->conexao->prepare($sql);
+            $consulta->bindValue(':titulo', $noticia->getTitulo());
+            $consulta->bindValue(':texto', $noticia->getTexto());
+            $consulta->bindValue(':resumo', $noticia->getResumo());
+            $consulta->bindValue(':imagem', $noticia->getImagem());
+            $consulta->bindValue(':destaque', $noticia->getDestaque()->value);
+            $consulta->bindValue(':categoria_id', $noticia->getCategoriaId(), PDO::PARAM_INT);
+            $consulta->bindValue(':id', $id, PDO::PARAM_INT);
+            if ($tipoUsuario === 'editor') {
+                $consulta->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
+            }
+            $consulta->execute();
+
+            $this->conexao->commit();
+        } catch (PDOException $e) {
+            if ($this->conexao->inTransaction()) {
+                $this->conexao->rollBack();
+            }
+
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao atualizar notícia");
+        } catch (\Throwable $e) {
+            if ($this->conexao->inTransaction()) {
+                $this->conexao->rollBack();
+            }
+
+            throw $e;
         }
     }
 }
