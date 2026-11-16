@@ -68,4 +68,36 @@ final class NoticiaServico
             throw new Exception("Erro ao listar notícias para o painel");
         }
     }
+
+    public function buscarPorId(int $noticiaId, int $usuarioId, string $tipoUsuario): ?array
+    {
+        $tipoUsuario = mb_strtolower($tipoUsuario, 'UTF-8');
+
+        $sql = "
+            SELECT n.id, n.data, n.titulo, n.texto, n.resumo, n.imagem,
+                   n.destaque, n.usuario_id, n.categoria_id
+            FROM noticias n
+            WHERE n.id = :noticia_id
+        ";
+
+        if ($tipoUsuario === 'editor') {
+            $sql .= " AND n.usuario_id = :usuario_id";
+        } elseif ($tipoUsuario !== 'admin') {
+            $sql .= " AND 1 = 0";
+        }
+
+        try {
+            $consulta = $this->conexao->prepare($sql);
+            $consulta->bindValue(':noticia_id', $noticiaId, PDO::PARAM_INT);
+            if ($tipoUsuario === 'editor') {
+                $consulta->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
+            }
+            $consulta->execute();
+
+            return $consulta->fetch(PDO::FETCH_ASSOC) ?: null;
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao buscar notícia por ID");
+        }
+    }
 }
