@@ -7,8 +7,21 @@ require_once __DIR__ . '/../includes/cabecalho-admin.php';
 
 $tipoUsuario = mb_strtolower($_SESSION['tipo'] ?? '', 'UTF-8');
 $idUsuario = (int) ($_SESSION['id'] ?? 0);
+$tokenCSRF = $_SESSION['token_csrf'] ?? null;
+if (!is_string($tokenCSRF) || $tokenCSRF === '') {
+    $tokenCSRF = bin2hex(random_bytes(32));
+    $_SESSION['token_csrf'] = $tokenCSRF;
+}
+
 $mensagemErro = '';
+$mensagemAcao = '';
 $noticias = [];
+
+if (isset($_GET['excluida'])) {
+    $mensagemAcao = 'Notícia excluída com sucesso.';
+} elseif (isset($_GET['erro_exclusao'])) {
+    $mensagemAcao = 'Não foi possível excluir a notícia. Ela pode não existir ou você não ter permissão.';
+}
 
 try {
     $noticiaServico = new NoticiaServico();
@@ -31,6 +44,12 @@ try {
         <?php if ($mensagemErro !== ''): ?>
             <div class="alert alert-danger text-center">
                 <?= Utils::escaparHtml($mensagemErro) ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($mensagemAcao !== ''): ?>
+            <div class="alert <?= isset($_GET['excluida']) ? 'alert-success' : 'alert-warning' ?> text-center">
+                <?= Utils::escaparHtml($mensagemAcao) ?>
             </div>
         <?php endif; ?>
 
@@ -67,9 +86,13 @@ try {
                                     </a>
                                 </td>
                                 <td>
-                                    <a class="btn btn-danger excluir btn-sm" href="noticia-exclui.php?id=<?= (int) $noticia['id'] ?>">
-                                        <i class="bi bi-trash"></i> Excluir
-                                    </a>
+                                    <form action="noticia-exclui.php" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="<?= (int) $noticia['id'] ?>">
+                                        <input type="hidden" name="token_csrf" value="<?= Utils::escaparHtml($tokenCSRF) ?>">
+                                        <button class="btn btn-danger excluir btn-sm" type="button">
+                                            <i class="bi bi-trash"></i> Excluir
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
