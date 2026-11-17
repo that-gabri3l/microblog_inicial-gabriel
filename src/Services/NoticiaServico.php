@@ -108,6 +108,38 @@ final class NoticiaServico
         }
     }
 
+    public function buscarPublicas(string $termo): array
+    {
+        $termo = trim($termo);
+        if ($termo === '') {
+            throw new InvalidArgumentException("O termo de busca não pode ser vazio.");
+        }
+
+        $padraoBusca = '%' . $termo . '%';
+        $sql = "
+            SELECT id, titulo, resumo
+            FROM noticias
+            WHERE titulo LIKE :titulo
+               OR resumo LIKE :resumo
+               OR texto LIKE :texto
+            ORDER BY data DESC
+            LIMIT 10
+        ";
+
+        try {
+            $consulta = $this->conexao->prepare($sql);
+            $consulta->bindValue(':titulo', $padraoBusca);
+            $consulta->bindValue(':resumo', $padraoBusca);
+            $consulta->bindValue(':texto', $padraoBusca);
+            $consulta->execute();
+
+            return $consulta->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao buscar notícias");
+        }
+    }
+
     public function listarPublicasPorCategoria(int $categoriaId): array
     {
         $sql = "
