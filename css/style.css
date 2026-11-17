@@ -16,4 +16,21 @@
     color: black;
 }
 
-.ajusta-texto { white-space: pre-wrap; }
+.noticia-imagem {
+    display: block;
+    height: auto;
+    max-height: 36rem;
+    object-fit: contain;
+    background-color: #f8f9fa;
+}
+
+.noticia-conteudo {
+    max-width: 75ch;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.noticia-conteudo p {
+    margin-bottom: 1.25rem;
+}

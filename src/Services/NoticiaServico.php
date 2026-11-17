@@ -70,6 +70,66 @@ final class NoticiaServico
         }
     }
 
+    public function listarDestaquesPublicos(): array
+    {
+        $sql = "
+            SELECT id, titulo, resumo, imagem
+            FROM noticias
+            WHERE destaque = :destaque
+            ORDER BY data DESC
+        ";
+
+        try {
+            $consulta = $this->conexao->prepare($sql);
+            $consulta->bindValue(':destaque', 'sim');
+            $consulta->execute();
+
+            return $consulta->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao listar notícias em destaque");
+        }
+    }
+
+    public function listarPublicas(): array
+    {
+        $sql = "
+            SELECT id, data, titulo, resumo
+            FROM noticias
+            ORDER BY data DESC
+        ";
+
+        try {
+            $consulta = $this->conexao->query($sql);
+            return $consulta->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao listar notícias públicas");
+        }
+    }
+
+    public function buscarPublicaPorId(int $noticiaId): ?array
+    {
+        $sql = "
+            SELECT n.id, n.data, n.titulo, n.texto, n.imagem,
+                   COALESCE(NULLIF(TRIM(u.nome), ''), 'Equipe Microblog') AS autor
+            FROM noticias n
+            LEFT JOIN usuarios u ON u.id = n.usuario_id
+            WHERE n.id = :noticia_id
+        ";
+
+        try {
+            $consulta = $this->conexao->prepare($sql);
+            $consulta->bindValue(':noticia_id', $noticiaId, PDO::PARAM_INT);
+            $consulta->execute();
+
+            return $consulta->fetch(PDO::FETCH_ASSOC) ?: null;
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao buscar notícia pública");
+        }
+    }
+
     public function buscarPorId(int $noticiaId, int $usuarioId, string $tipoUsuario): ?array
     {
         $tipoUsuario = mb_strtolower($tipoUsuario, 'UTF-8');
