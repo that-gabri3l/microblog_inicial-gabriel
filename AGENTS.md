@@ -11,7 +11,7 @@ Use esta referência como contexto inicial; antes de alterar algo, confira o có
 - Requer PHP 8.1 ou superior: o código usa enums, tipos `mixed` e propriedades tipadas.
 - Requer Apache/PHP, MySQL ou MariaDB e a extensão PDO para MySQL.
 - O autoload PSR-4 do Composer associa `Microblog\` à pasta `src/`.
-- A conexão está configurada em `src/Database/ConexaoBD.php` para `localhost`, usuário `root`, senha vazia e banco `microblog_2026`. Ajuste a configuração localmente se seu ambiente for diferente; não versione credenciais.
+- A conexão e as credenciais locais ficam em `src/Database/ConexaoBD.php`; ajuste-as conforme o ambiente e não copie credenciais para documentação ou commits. O banco usado pelo projeto é `microblog_2026`.
 - Para preparar o banco, crie/selecione `microblog_2026` e importe `_materiais/microblog_2026_completo.sql`. `_materiais/microblog_2026_inicial.sql` é uma alternativa com notícias sem os dados iniciais completos.
 - A aplicação e os caminhos de imagens esperam que o projeto seja servido pela raiz do site, como em `http://localhost/microblog_inicial-gabriel/`.
 - `vendor/` é dependência gerada e está ignorada pelo Git. Use `composer install` se precisar restaurar as dependências; rode `composer dump-autoload` se alterar o mapeamento/autoload.
@@ -24,7 +24,7 @@ Use esta referência como contexto inicial; antes de alterar algo, confira o có
 - `src/Enums/`: valores fechados de domínio (`TipoUsuario`, `Destaque`).
 - `src/Helpers/`: normalização, escape, upload, logging e validações (`Utils`, `Validacoes`).
 - `src/Models/`: modelos de domínio (`Usuario`, `Categoria`, `Noticia`).
-- `src/Services/`: consultas e persistência de usuários, categorias e notícias.
+- `src/Services/`: consultas e persistência de usuários, categorias e notícias, incluindo consultas públicas de notícias.
 - `admin/`: páginas de painel e formulários de administração.
 - `includes/`: cabeçalhos, rodapés e componentes PHP compartilhados.
 - `images/`: imagens usadas pelo site e destino dos uploads de notícias.
@@ -44,6 +44,15 @@ Use esta referência como contexto inicial; antes de alterar algo, confira o có
 - Upload de notícia usa `Utils::upload()`: imagens JPEG, GIF, PNG ou WebP, limite de 2 MB, nome de até 60 caracteres e gravação em `images/`. Formulários com upload precisam de `enctype="multipart/form-data"`.
 - A interface usa Bootstrap e classes já presentes nos templates. Reutilize cabeçalho/rodapé de `includes/` em vez de duplicar a estrutura comum.
 
+## Páginas públicas e busca
+
+- `index.php` carrega do banco as notícias com destaque e `includes/todas.php` lista todas as notícias em ordem decrescente de data.
+- `noticia.php?id=...` carrega uma notícia pública pelo serviço; valida o ID, escapa o conteúdo e apresenta o texto em parágrafos. Se o autor não estiver associado, exibe “Equipe Microblog”.
+- `includes/cabecalho.php` carrega as categorias com `CategoriaServico::listarTodos()`. A lista do menu é dinâmica; `noticias-por-categoria.php?id=...` valida a categoria, filtra as notícias por `categoria_id` e mantém a categoria atual indicada no menu.
+- `NoticiaServico` concentra as consultas públicas: `listarDestaquesPublicos()`, `listarPublicas()`, `listarPublicasPorCategoria()`, `buscarPublicaPorId()` e `buscarPublicas()`.
+- A busca do cabeçalho envia `POST` via `fetch` para `resultados.php`, que responde JSON. O termo deve ter de 2 a 100 caracteres; a busca procura em título, resumo e texto e retorna até 10 notícias mais recentes.
+- `js/busca.js` espera 300 ms após a digitação, cancela requisições anteriores, permite fechar resultados com `Escape` e cria o conteúdo com APIs DOM/texto (`textContent`), sem interpretar títulos e resumos como HTML.
+
 ## Domínio e validações
 
 - Usuários têm `id`, `nome`, `email`, senha com hash e tipo (`admin` ou `editor`). Senhas são tratadas com `password_hash`/`password_verify`; na edição, campo vazio preserva o hash existente.
@@ -59,7 +68,7 @@ Use esta referência como contexto inicial; antes de alterar algo, confira o có
 - `includes/cabecalho-admin.php` chama `ControleDeAcesso::exigirLogin()`. Inclua o controle de acesso em qualquer página administrativa e valide autorização no servidor; esconder links na interface não substitui essa validação.
 - Em `NoticiaServico::listarParaPainel()`, notícias são filtradas pelo autor quando o tipo normalizado é `editor`; administradores recebem a lista geral.
 - As páginas de usuários e categorias implementam listagem, inserção, atualização e exclusão. A atualização de usuário atualmente tem blocos `catch` vazios; corrija-os caso altere esse fluxo.
-- O cadastro e a listagem de notícias estão implementados. `admin/noticia-atualiza.php`, `admin/noticia-exclui.php` e `admin/sair.php` ainda são páginas provisórias, embora exista um método `logout()` em `ControleDeAcesso`.
+- O cadastro, a listagem, a edição e a exclusão de notícias estão implementados. A edição e a exclusão respeitam a propriedade das notícias para editores; a exclusão aceita apenas `POST` e valida CSRF. `admin/sair.php` ainda é provisória, embora exista um método `logout()` em `ControleDeAcesso`.
 - O painel inicial restringe visualmente alguns links por tipo, mas confira autorização nas páginas de destino ao implementar ou modificar operações.
 
 ## Cuidados ao alterar
